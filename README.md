@@ -1,6 +1,6 @@
 # Payment SDK
 
-PaymentSDK provides an easy way for apps to connect to PaymentService
+PaymentSDK provides an easy way to connect to PaymentService
 
 **Table of contents**
 
@@ -28,7 +28,7 @@ PaymentSDK provides an easy way for apps to connect to PaymentService
 
 ## 🤚 Introduction <a name="introduction"></a>
 
-Depending on your needed, PaymentSDK provides two options for you to integrate. If you want to use pre built-in UI that contains payment method list, transaction detail and transaction result, please install `PaymentSDK`. In case you only want to use business functions, please install `PaymentGateway`.
+Depending on your needed, PaymentSDK provides two options to integrate. If you want to use pre built-in UI that contains payment method list, transaction detail and transaction result, please install `PaymentSDK`. In case you only want to use business functions, please install `PaymentGateway`.
 
 ## 🍖  Installation <a name="installation"></a>
 
@@ -52,7 +52,7 @@ To install entire `PaymentSDK`
 pod 'PaymentSDK', :git => 'https://github.com/tungnx-teko/payment-sdk-ios'
 ```
 
-## 🔩 Configuration
+## 🔩 Configuration<a name="configuration"></a>
 
 ### For **Android**<a name="android_configuration"></a>
 
@@ -77,51 +77,17 @@ val paymentGateway = PaymentGateway.getInstance()
 
 For each payment method, we need to create configuration of which structure depends on that method, and then create `PaymentMethod`object
 
-* For `CashPaymentMethod`
-
-```kotlin
-val cashConfig = CashPaymentConfig(
-    asiaStaffId,
-    crmStaffId,
-    partnerCode
-)
-val cash = CashPaymentMethod(cashConfig, CashMethod)
-```
-
 * For `SPOSPaymentMethod`
 
 ```kotlin
-val sposConfig = SPosPaymentConfig(
-    payerId,
-    payerAccId,
-    payerName,
-    cashierId,
-    cashierAccId,
-    cashierIamId,
-    cashierName,
-    cashierPhone,
-    cashierEmail,
-    mcc,
-    partnerCode
-)
+val sposConfig = SPosPaymentConfig(partnerCode)
 val spos = SPosPaymentMethod(sposConfig, SposMethod)
 ```
 
 * For `CTTPaymentMethod`
 
 ```kotlin
-val qrConfig = CTTPaymentConfig(
-    payerId,
-    payerAccId,
-    payerName,
-    cashierId,
-    cashierAccId,
-    cashierIamId,
-    cashierName,
-    cashierPhone,
-    cashierEmail,
-    partnerCode
-)
+val qrConfig = CTTPaymentConfig(partnerCode)
 val qr = CTTPaymentMethod(qrConfig, MMSMethod)
 ```
 
@@ -129,7 +95,7 @@ Finally, add payment methods which you wants to use
 
 ```kotlin
 PaymentGateway.getInstance().addPaymentMethods(
-    listOf(cash, spos, qr)
+    listOf(qr, spos)
 )
 ```
 
@@ -144,15 +110,14 @@ let config = PaymentGatewayConfig(clientCode: 'APP_CLIENT_CODE',
         
 ```
 
-For each payment method, we need to set callbackUrl. For example, if use want to use `QR` method:
+If you use `CTT` method, please set callbackUrl to config. `returnUrl` and `cancelUrl` values are used to redirect when payment is completed.
 
 ```swift
 config.setCallbackUrl(forMethod: .qr,
-                      returnUrl: 'QR_RETURN_URL',
-                      cancelUrl: 'QR_CANCEL_URL')
+                      returnUrl: 'RETURN_URL',
+                      cancelUrl: 'CANCEL_URL')
 ```
 
-If you don't use `returnUrl` and `cancelUrl`, don't hesitate to pass emtpy strings to them.
 
 Finally, don't forget to add this config to `PaymentGateway`
 
@@ -162,9 +127,11 @@ PaymentGateway.shared.setConfig(config)
 
 ## 🔑 Usage<a name="usage"></a>
 
-## PaymentGateway<a name="paymentgateway"></a>
+## PaymentGateway Usage<a name="paymentgateway"></a>
 
-`PaymentGateway` provides business function to create QR code, or create transaction. To do this, we need to create a `PaymentRequest` and then call function `PaymentGateway.pay(paymentMethod, paymentRequest)`
+`PaymentGateway` provides business functions to create QR code, or create transaction. To do this, we need to create a `PaymentRequest` and pass to `PaymentGateway.pay(paymentMethod, paymentRequest)`
+
+And then, we can use the result of `pay` method to do everything you want.
 
 For details
 
@@ -188,17 +155,6 @@ val cashRequest = CashTransactionRequest.Builder(
 ).build()
 ```
 
-**iOS**
-
-```swift
-let request = CTTPaymentRequest(orderId: payload.orderId.orEmpty,
-                                            orderCode: payload.orderCode.orEmpty,
-                                            amount: payload.amount ?? 0)                                     
-```
-
-And then, we can use the result of `pay` method to do everything you want
-
-**Android**
 ```kotlin
 val result = paymentGateway.pay(paymentMethod.method, qrRequest)
 if (result.isSuccess) {
@@ -209,7 +165,15 @@ val transactionResponse = result.get()
 }
 ```
 
+<br/>
+
 **iOS**
+
+```swift
+let request = CTTPaymentRequest(orderId: orderId,
+                                orderCode: orderCode,
+                                amount: amount)                                     
+```
 
 ```swift
 try paymentGateway.pay(method: .qr, request: request, completion: { result in
@@ -224,7 +188,7 @@ try paymentGateway.pay(method: .qr, request: request, completion: { result in
 
 ### Result observation
 
-In the screen where you want to observe the transaction result, you need to create a `TransactionObserver`
+In the screen where you want to observe the transaction result, you need to create a `PaymentObserver`
 
 **Android**
 ```kotlin
@@ -241,7 +205,7 @@ observer.transactionResultEvent(transactionCode)
 
 **iOS**
 ```swift
-PaymentObserver().observe(orderId: order.id) { result in
+observer.observe(transactionCode: transactionCode) { result in
     switch result {
     case .success:
         // Success, order is paid
@@ -251,7 +215,19 @@ PaymentObserver().observe(orderId: order.id) { result in
 }
 ```
 
-## PaymentSDK<a name="paymentsdk"></a>
+## PaymentSDK Usage<a name="paymentsdk"></a>
+
+### Screenshots
+
+<p float="left">
+  <img src="https://i.imgur.com/cGTRiaa.png" width="100" />
+  <img src="https://i.imgur.com/AFW3VMW.png" width="100" /> 
+  <img src="https://i.imgur.com/qbWj3z8.png" width="100" />
+  <img src="https://i.imgur.com/OYn0BS9.png" width="100" />
+  <img src="https://i.imgur.com/6PDyS71.png" width="100" />
+</p>
+
+We need to create a `PaymentRequest` object and then pass to `PaymentActivity` or `PaymentViewController`.
 
 > **Note:** Even when you use PaymentSDK, it's still needed to set config for PaymentGateway.
 
@@ -282,7 +258,6 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
                 }
                 PaymentActivity.RESULT_SUCCEEDED -> {
                     // Payment is succeeded
-                
                 }
             }
         }
@@ -292,25 +267,30 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 ```
 
 **iOS**
+
+
 ```swift
-let request = QRPaymentRequest(orderId: order.id, orderCode: order.code.orEmpty, amount: order.amount)
-let payment = PaymentRouter.createModule(request: request, delegate: self)
-let nav = UINavigationController(rootViewController: payment)
-viewController?.present(nav, animated: true, completion: nil)
+import PaymentSDK
+import PaymentGateway
+
+let request = PaymentRequest(orderId: "[orderId]",
+                             orderCode: "[orderCode]",
+                             amount: 20000)
+let payment = PaymentRouter.createModule(request: request, 
+                                         delegate: self)
+present(payment, animated: true, completion: nil)
 ```
 
-Delegate is an object whose class conformed to `PaymentDelegate`
+Delegate is an object whose class conforms to `PaymentDelegate`. 
+
+> You can either present or push paymentViewController from your navigation. PaymentSDK has itself built-in navigation controller. 
 
 ```swift
-func didSuccess(transaction: PaymentTransactionResult) {
+func onResult(_ result: PaymentResult) {
     
 }
 
-func didFailure() {
-    
-}
-
-func didCancel() {
+func onCancel() {
     
 }
 ```
@@ -318,3 +298,7 @@ func didCancel() {
 ## 🌈 Customization<a name="customization"></a>
 
 All resources is open, so client can override it to get the expected UI.
+
+## 🐣 Contributors
+
+<a href="https://github.com/tungnx-teko" target="_blank"><img src="https://avatars3.githubusercontent.com/u/54269108?s=460&u=2a1c8a8745bcb721d943697d3fb4a0af4a4a203f&v=4" width="64px" height="64px" style="border-radius:32px;"></a>&nbsp;&nbsp;&nbsp;<a href="https://github.com/tantv-teko" target="_blank"><img src="https://avatars3.githubusercontent.com/u/52944583?s=460&u=99b567cb2d2feb9fee11e9b4a04c8cf21a02249b&v=4" width="64px" height="64px" style="border-radius:32px;"></a>
