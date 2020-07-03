@@ -176,19 +176,19 @@ And then, we can use the result of `pay` method to do everything you want
 
 **Android**
 ```kotlin
-val result = paymentGateway.newTransaction(paymentMethod.method, qrRequest)
-if (result.isSuccess) {
-val transactionResponse = result.get()
-    if (transactionResponse.isSuccess()) {
-        // Requested a transaction
+    val result = paymentGateway.pay(paymentMethod.method, qrRequest)
+    if (result.isSuccess) {
+    val transactionResponse = result.get()
+        if (transactionResponse.isSuccess()) {
+            // Requested a transaction
+        }
     }
-}
 ```
 
 **iOS**
 
 ```swift
-    try gateway.pay(method: .qr, request: request, completion: { result in
+    try paymentGateway.pay(method: .qr, request: request, completion: { result in
         switch result {
         case .success(let transaction):
             // Do something
@@ -204,27 +204,93 @@ In the screen where you want to observe the transaction result, you need to crea
 
 **Android**
 ```kotlin
-observer.transactionResultEvent(transactionCode)
-        .onEach { result ->
-            if (result.isSuccess()) {
-                // Success, order is paid
-            } else {
-                // Fail
+    observer.transactionResultEvent(transactionCode)
+            .onEach { result ->
+                if (result.isSuccess()) {
+                    // Success, order is paid
+                } else {
+                    // Fail
+                }
             }
-        }
-        .launchIn(lifecycleScope)
+            .launchIn(lifecycleScope)
 ```
 
 **iOS**
 ```swift
-PaymentObserver().observe(orderId: order.id) { result in
-    switch result {
-    case .success:
-        self.didQRPaymentSuccessfully()
-    case .failure(let error):
-        self.didQRPaymentFailed(error: error)
+    PaymentObserver().observe(orderId: order.id) { result in
+        switch result {
+        case .success:
+            // Success, order is paid
+        case .failure(let error):
+            // Failed
+        }
     }
-}
+```
+
+## PaymentSDK
+
+> **Note:** Even when you use PaymentSDK, it's still needed to set config for PaymentGateway.
+
+**Android**
+
+```kotlin
+    val request = PaymentRequest(
+        orderId,
+        orderCode,
+        orderDescription,
+        amount,
+        expireTime
+    )
+    PaymentActivity.startForResult(this, request)
+```
+
+To handle result:
+```kotlin
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            PaymentActivity.RC_PAYMENT -> {
+                when (resultCode) {
+                    PaymentActivity.RESULT_CANCELED -> {
+                        // Payment is canceled
+                    }
+                    PaymentActivity.RESULT_FAILED -> {
+                        // Payment is failed
+                    }
+                    PaymentActivity.RESULT_SUCCEEDED -> {
+                        // Payment is succeeded
+                    
+                    }
+                }
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+```
+
+**iOS**
+```swift
+    let request = QRPaymentRequest(orderId: order.id, orderCode: order.code.orEmpty, amount: order.amount)
+    let payment = PaymentRouter.createModule(request: request, delegate: self)
+    let nav = UINavigationController(rootViewController: payment)
+    viewController?.present(nav, animated: true, completion: nil)
+```
+
+Delegate is an object whose class conformed to `PaymentDelegate`
+
+```swift
+    func didSuccess(transaction: PaymentTransactionResult) {
+        
+    }
+
+    func didFailure() {
+        
+    }
+
+    func didCancel() {
+        
+    }
 ```
 
 ## 🌈 Customization
+
+All resources is open, so client can override it to get the expected UI.
