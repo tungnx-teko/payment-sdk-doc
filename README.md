@@ -1,6 +1,6 @@
 # Payment SDK
 
-PaymentSDK provides an easy way for app to connect to PaymentService
+PaymentSDK provides an easy way for apps to connect to PaymentService
 
 ## 🤚 Introduction
 
@@ -30,6 +30,34 @@ pod 'PaymentSDK', :git => 'https://github.com/tungnx-teko/payment-sdk-ios'
 
 ## 🔩 Configuration
 
+Before using, we need to add config for PaymentGateway
+
+### For **iOS**
+
+```swift
+let config = PaymentGatewayConfig(clientCode: 'APP_CLIENT_CODE',
+                                  terminalCode: 'APP_TERMINAL_CODE',
+                                  serviceCode: 'APP_PAYMENT_SERVICE_CODE',
+                                  secretKey: 'APP_PAYMENT_SECRET_KEY',
+                                  baseUrl: 'BASE_PAYMENT_URL')
+        
+```
+
+For each payment method, we need to set callbackUrl. For example, if use want to use `QR` method:
+
+```swift
+config.setCallbackUrl(forMethod: .qr,
+                      returnUrl: 'QR_RETURN_URL',
+                      cancelUrl: 'QR_CANCEL_URL')
+```
+
+If you don't use `returnUrl` and `cancelUrl`, don't hesitate to pass emtpy strings to them.
+
+Finally, don't forget to add this config to `PaymentGateway`
+
+```swift
+PaymentGateway.shared.setConfig(config)
+```
 
 ## 🔑 Usage
 
