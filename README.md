@@ -138,5 +138,93 @@ PaymentGateway.shared.setConfig(config)
 
 ## 🔑 Usage
 
+## PaymentGateway
+
+`PaymentGateway` provides business function to create QR code, or create transaction. To do this, we need to create a `PaymentRequest` and then call function `PaymentGateway.pay(paymentMethod, paymentRequest)`
+
+For details
+
+**Android**
+
+```kotlin
+val paymentMethod = paymentGateway.getPaymentMethod(method.name, method.code)
+
+// cash request
+val cashConfig = paymentMethod.config as CashPaymentConfig
+val cashRequest = CashTransactionRequest.Builder(
+    asiaStaffId = cashConfig.asiaStaffId,
+    crmStaffId = cashConfig.crmStaffId,
+    orderId = orderId, // request data
+    methods = listOf(
+        CashTransactionRequest.Method(
+            amount = amount, // request data
+            partnerCode = cashConfig.partnerCode
+        )
+    )
+).build()
+```
+
+**iOS**
+
+```swift
+let request = CTTPaymentRequest(orderId: payload.orderId.orEmpty,
+                                            orderCode: payload.orderCode.orEmpty,
+                                            amount: payload.amount ?? 0)                                     
+```
+
+And then, we can use the result of `pay` method to do everything you want
+
+**Android**
+```kotlin
+val result = paymentGateway.newTransaction(paymentMethod.method, qrRequest)
+if (result.isSuccess) {
+val transactionResponse = result.get()
+    if (transactionResponse.isSuccess()) {
+        // Requested a transaction
+    }
+}
+```
+
+**iOS**
+
+```swift
+    try gateway.pay(method: .qr, request: request, completion: { result in
+        switch result {
+        case .success(let transaction):
+            // Do something
+        case .failure(let error):
+            // Handle error
+        }
+    })  
+```
+
+### Result observation
+
+In the screen where you want to observe the transaction result, you need to create a `TransactionObserver`
+
+**Android**
+```kotlin
+observer.transactionResultEvent(transactionCode)
+        .onEach { result ->
+            if (result.isSuccess()) {
+                // Success, order is paid
+            } else {
+                // Fail
+            }
+        }
+        .launchIn(lifecycleScope)
+```
+
+**iOS**
+```swift
+PaymentObserver().observe(orderId: order.id) { result in
+    switch result {
+    case .success:
+        self.didQRPaymentSuccessfully()
+    case .failure(let error):
+        self.didQRPaymentFailed(error: error)
+    }
+}
+```
 
 ## 🌈 Customization
