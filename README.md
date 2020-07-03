@@ -16,7 +16,7 @@ Add instruction here
 
 Using **[CocoaPods](https://cocoapods.org/)**
 
-To install `PaymentGateway`:
+To install only `PaymentGateway`
 
 ```ruby
 pod 'PaymentGateway', :git => 'https://github.com/tungnx-teko/payment-sdk-ios'
@@ -30,7 +30,84 @@ pod 'PaymentSDK', :git => 'https://github.com/tungnx-teko/payment-sdk-ios'
 
 ## 🔩 Configuration
 
-Before using, we need to add config for PaymentGateway
+### For **Android**
+
+```kotlin
+val config = PaymentGatewayConfig(
+    clientCode, // payment client code, provided by PS
+    terminalCode, // payment terminal code, provided by PS
+    serviceCode, // payment service code, provided by PS
+    secretKey, // payment secret key, provided by PS
+    baseUrl, // payment service base url
+    logging // enable logging or not
+)
+
+val paymentGateway = PaymentGateway.initialize(config)
+```
+
+After that we can retrieve the instance anywhere by using
+
+```kotlin
+val paymentGateway = PaymentGateway.getInstance()
+```
+
+For each payment method, we need to create configuration of which structure depends on that method, and then create `PaymentMethod`object
+
+* For `CashPaymentMethod`
+
+```kotlin
+val cashConfig = CashPaymentConfig(
+    asiaStaffId,
+    crmStaffId,
+    partnerCode
+)
+val cash = CashPaymentMethod(cashConfig, CashMethod)
+```
+
+* For `SPOSPaymentMethod`
+
+```kotlin
+val sposConfig = SPosPaymentConfig(
+    payerId,
+    payerAccId,
+    payerName,
+    cashierId,
+    cashierAccId,
+    cashierIamId,
+    cashierName,
+    cashierPhone,
+    cashierEmail,
+    mcc,
+    partnerCode
+)
+val spos = SPosPaymentMethod(sposConfig, SposMethod)
+```
+
+* For `CTTPaymentMethod`
+
+```kotlin
+val qrConfig = CTTPaymentConfig(
+    payerId,
+    payerAccId,
+    payerName,
+    cashierId,
+    cashierAccId,
+    cashierIamId,
+    cashierName,
+    cashierPhone,
+    cashierEmail,
+    partnerCode
+)
+val qr = CTTPaymentMethod(qrConfig, MMSMethod)
+```
+
+Finally, add payment methods which you wants to use
+
+```kotlin
+PaymentGateway.getInstance().addPaymentMethods(
+    listOf(cash, spos, qr)
+)
+```
 
 ### For **iOS**
 
