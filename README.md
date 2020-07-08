@@ -85,6 +85,15 @@ config = PaymentGatewayConfig(
 )
 ```
 
+**Payment api url**
+
+```ruby
+Dev: "https://payment.develop.tekoapis.net/api/"
+Staging: "https://payment.stage.tekoapis.net/api/"
+Production: "https://payment.tekoapis.com/api/"
+```
+
+
 Then we need to init `PaymentGateway` with this config
 ```kotlin
 // Kotlin
@@ -168,8 +177,7 @@ val cttRequest = CTTTransactionRequest.Builder(
     orderId = orderId,
     orderCode = orderCode,
     amount = amount,
-    clientRequestTime = Date(),
-    expDate = expireTime,
+    expireTime = expireTime,
     methodCode = paymentMethod.method.code,
     partnerCode = paymentMethod.config.partnerCode
 ).build()
@@ -192,7 +200,8 @@ val transactionResponse = result.get()
 ```swift
 let request = CTTTransactionRequest(orderId: orderId,
                                     orderCode: orderCode,
-                                    amount: amount)                                     
+                                    amount: amount, 
+                                    expireTime: expireTime)                                     
 ```
 
 ```swift
