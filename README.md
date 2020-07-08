@@ -28,102 +28,126 @@ PaymentSDK provides an easy way to connect to PaymentService
 
 ## 🤚 Introduction <a name="introduction"></a>
 
-Depending on your needed, PaymentSDK provides two options to integrate. If you want to use pre built-in UI that contains payment method list, transaction detail and transaction result, please install `PaymentSDK`. In case you only want to use business functions, please install `PaymentGateway`.
+Depending on your purpose, PaymentSDK provides two options to integrate. If you want to use pre built-in UI that contains payment method list, transaction detail and transaction result, please install `PaymentSDK`. In case you only want to use business functions, please install `PaymentGateway`.
 
 ## 🍖  Installation <a name="installation"></a>
 
 ### Android <a name="android_installation"></a>
 
-Add instruction here
+Add dependency to `gradle`
+
+```gradle
+dependencies {
+    compile vn.teko.android.payment:ui:0.2.1
+}
+```
+Production 
+
+```gradle
+dependencies {
+    compile vn.teko.android.payment:ui:0.2.1-prod
+}
+```
 
 ### iOS <a name="ios_installation"></a>
 
 Using **[CocoaPods](https://cocoapods.org/)**
 
+**Prerequisite**: `TekPaymentService` has been installed
+
+```ruby
+pod 'TekPaymentService', :git => 'https://github.com/linhvt-teko/Tekit.git'
+```
+
 To install only `PaymentGateway`
 
 ```ruby
-pod 'PaymentGateway', :git => 'https://github.com/tungnx-teko/payment-sdk-ios'
+pod 'PaymentGateway', :git => 'https://github.com/tungnx-teko/payment-gateway-ios.git'
 ```
 
 To install entire `PaymentSDK`
 
 ```ruby
-pod 'PaymentSDK', :git => 'https://github.com/tungnx-teko/payment-sdk-ios'
+pod 'PaymentSDK', :git => 'https://github.com/tungnx-teko/payment-sdk-ios.git'
 ```
 
 ## 🔩 Configuration<a name="configuration"></a>
 
-### For **Android**<a name="android_configuration"></a>
+Before using PaymentGateway, we have to set up a `PaymentGatewayConfig`
 
-```kotlin
-val config = PaymentGatewayConfig(
+```swift
+config = PaymentGatewayConfig(
     clientCode, // payment client code, provided by PS
     terminalCode, // payment terminal code, provided by PS
     serviceCode, // payment service code, provided by PS
     secretKey, // payment secret key, provided by PS
-    baseUrl, // payment service base url
-    logging // enable logging or not
+    baseUrl // payment service base url
 )
+```
 
+Then we need to init `PaymentGateway` with this config
+```kotlin
+// Kotlin
 val paymentGateway = PaymentGateway.initialize(config)
 ```
 
-After that we can retrieve the instance anywhere by using
-
-```kotlin
-val paymentGateway = PaymentGateway.getInstance()
+```swift
+// Swift
+PaymentGateway.shared.setConfig(config)
 ```
 
-For each payment method, we need to create configuration of which structure depends on that method, and then create `PaymentMethod`object
+After that, we can retrieve an instance of `PaymentGateway` by
 
-* For `SPOSPaymentMethod`
+```kotlin
+// Kotlin
+val paymentGateway = PaymentGateway.getInstance()
+```
+```swift
+// Swift
+let paymentGateway = PaymentGateway.shared
+```
+
+Then you have to add a respective config for each payment method you use in your app.
+
+
+#### **Android**
+
+#### `SPOSPaymentMethod`
 
 ```kotlin
 val sposConfig = SPosPaymentConfig(partnerCode)
 val spos = SPosPaymentMethod(sposConfig, SposMethod)
 ```
 
-* For `CTTPaymentMethod`
+#### `CTTPaymentMethod`
 
 ```kotlin
 val qrConfig = CTTPaymentConfig(partnerCode)
 val qr = CTTPaymentMethod(qrConfig, MMSMethod)
 ```
 
-Finally, add payment methods which you wants to use
+#### **iOS**
 
-```kotlin
+```swift
+let cttConfig = CTTPaymentConfig(partnerCode: partnerCode)
+try PaymentGateway.addConfig(cttConfig, forMethod: .qr)
+```
+
+
+Finally, add payment methods to the `gateway`
+
+```swift
+// Kotlin
 PaymentGateway.getInstance().addPaymentMethods(
     listOf(qr, spos)
 )
 ```
 
-### For **iOS**<a name="ios_configuration"></a>
-
 ```swift
-let config = PaymentGatewayConfig(clientCode: 'APP_CLIENT_CODE',
-                                  terminalCode: 'APP_TERMINAL_CODE',
-                                  serviceCode: 'APP_PAYMENT_SERVICE_CODE',
-                                  secretKey: 'APP_PAYMENT_SECRET_KEY',
-                                  baseUrl: 'BASE_PAYMENT_URL')
-        
+// Swift
+PaymentGateway.addPaymentMethods([.qr, .spos])
 ```
 
-If you use `CTT` method, please set callbackUrl to config. `returnUrl` and `cancelUrl` values are used to redirect when payment is completed.
-
-```swift
-config.setCallbackUrl(forMethod: .qr,
-                      returnUrl: 'RETURN_URL',
-                      cancelUrl: 'CANCEL_URL')
-```
-
-
-Finally, don't forget to add this config to `PaymentGateway`
-
-```swift
-PaymentGateway.shared.setConfig(config)
-```
 
 ## 🔑 Usage<a name="usage"></a>
 
@@ -133,25 +157,21 @@ PaymentGateway.shared.setConfig(config)
 
 And then, we can use the result of `pay` method to do everything you want.
 
-For details
-
 **Android**
 
 ```kotlin
 val paymentMethod = paymentGateway.getPaymentMethod(method.name, method.code)
 
-// cash request
-val cashConfig = paymentMethod.config as CashPaymentConfig
-val cashRequest = CashTransactionRequest.Builder(
-    asiaStaffId = cashConfig.asiaStaffId,
-    crmStaffId = cashConfig.crmStaffId,
-    orderId = orderId, // request data
-    methods = listOf(
-        CashTransactionRequest.Method(
-            amount = amount, // request data
-            partnerCode = cashConfig.partnerCode
-        )
-    )
+// CTT request
+val cttConfig = paymentMethod.config as CashPaymentConfig
+val cttRequest = CTTTransactionRequest.Builder(
+    orderId = orderId,
+    orderCode = orderCode,
+    amount = amount,
+    clientRequestTime = Date(),
+    expDate = expireTime,
+    methodCode = paymentMethod.method.code,
+    partnerCode = paymentMethod.config.partnerCode
 ).build()
 ```
 
@@ -170,9 +190,9 @@ val transactionResponse = result.get()
 **iOS**
 
 ```swift
-let request = CTTPaymentRequest(orderId: orderId,
-                                orderCode: orderCode,
-                                amount: amount)                                     
+let request = CTTTransactionRequest(orderId: orderId,
+                                    orderCode: orderCode,
+                                    amount: amount)                                     
 ```
 
 ```swift
@@ -192,7 +212,7 @@ In the screen where you want to observe the transaction result, you need to crea
 
 **Android**
 ```kotlin
-observer.transactionResultEvent(transactionCode)
+observer.observe(transactionCode)
         .onEach { result ->
             if (result.isSuccess()) {
                 // Success, order is paid
@@ -231,16 +251,17 @@ We need to create a `PaymentRequest` object and then pass to `PaymentActivity` o
 
 > **Note:** Even when you use PaymentSDK, it's still needed to set config for PaymentGateway.
 
+```swift
+let request = PaymentRequest(orderId: "",
+                             orderCode: "",
+                             orderDescription: "", // not required
+                             amount: 100000,
+                             expireTime: 600) // not required, default is 600s
+```
+
 **Android**
 
 ```kotlin
-val request = PaymentRequest(
-    orderId,
-    orderCode,
-    orderDescription,
-    amount,
-    expireTime
-)
 PaymentActivity.startForResult(this, request)
 ```
 
@@ -273,9 +294,6 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 import PaymentSDK
 import PaymentGateway
 
-let request = PaymentRequest(orderId: "[orderId]",
-                             orderCode: "[orderCode]",
-                             amount: 20000)
 let payment = PaymentRouter.createModule(request: request, 
                                          delegate: self)
 present(payment, animated: true, completion: nil)
