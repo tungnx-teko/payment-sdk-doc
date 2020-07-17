@@ -8,23 +8,15 @@ PaymentSDK provides an easy way to connect to PaymentService
 
 2. [Installation](#installation)
 
-    * [Android](#android_installation)
-    
-    * [iOS](#ios_installation)
-
 3. [Configuration](#configuration)
 
-    * [Android](#android_configuration)
-  
-    * [iOS](#ios_configuration)
+4. [Create Transaction](#create-transaction)
 
-4. [Usage](#usage)
+5. [Observe transaction result](#observe-transaction)
 
-    * [PaymentGateway](#paymentgateway)
+6. [Open Payment UI](#open-payment-ui)
 
-    * [PaymentSDK](#paymentsdk)
-
-5. [Customization](#customization)
+7. [Customization](#customization)
 
 ## 🤚 Introduction <a name="introduction"></a>
 
@@ -49,34 +41,12 @@ dependencies {
 }
 ```
 
-### iOS <a name="ios_installation"></a>
-
-Using **[CocoaPods](https://cocoapods.org/)**
-
-**Prerequisite**: `TekPaymentService` has been installed
-
-```ruby
-pod 'TekPaymentService', :git => 'https://github.com/linhvt-teko/Tekit.git'
-```
-
-To install only `PaymentGateway`
-
-```ruby
-pod 'PaymentGateway', :git => 'https://github.com/tungnx-teko/payment-gateway-ios.git'
-```
-
-To install entire `PaymentSDK`
-
-```ruby
-pod 'PaymentSDK', :git => 'https://github.com/tungnx-teko/payment-sdk-ios.git'
-```
-
 ## 🔩 Configuration<a name="configuration"></a>
 
 Before using PaymentGateway, we have to set up a `PaymentGatewayConfig`
 
-```swift
-config = PaymentGatewayConfig(
+```kotlin
+val config = PaymentGatewayConfig(
     clientCode, // payment client code, provided by PS
     terminalCode, // payment terminal code, provided by PS
     serviceCode, // payment service code, provided by PS
@@ -96,30 +66,17 @@ Production: "https://payment.tekoapis.com/api/"
 
 Then we need to init `PaymentGateway` with this config
 ```kotlin
-// Kotlin
 val paymentGateway = PaymentGateway.initialize(config)
-```
-
-```swift
-// Swift
-PaymentGateway.shared.setUp(config, environment: .production)
 ```
 
 After that, we can retrieve an instance of `PaymentGateway` by
 
 ```kotlin
-// Kotlin
 val paymentGateway = PaymentGateway.getInstance()
-```
-```swift
-// Swift
-let paymentGateway = PaymentGateway.shared
 ```
 
 Then you have to add a respective config for each payment method you use in your app.
 
-
-#### **Android**
 
 #### `SPOSPaymentMethod`
 
@@ -135,38 +92,20 @@ val qrConfig = CTTPaymentConfig(partnerCode)
 val qr = CTTPaymentMethod(qrConfig, MMSMethod)
 ```
 
-#### **iOS**
-
-```swift
-let cttConfig = CTTPaymentConfig(partnerCode: partnerCode)
-try PaymentGateway.addConfig(cttConfig, forMethod: .qr)
-```
-
-
 Finally, add payment methods to the `gateway`
 
 ```swift
-// Kotlin
 PaymentGateway.getInstance().addPaymentMethods(
     listOf(qr, spos)
 )
 ```
 
-```swift
-// Swift
-PaymentGateway.addPaymentMethods([.qr, .spos])
-```
 
-
-## 🔑 Usage<a name="usage"></a>
-
-## PaymentGateway Usage<a name="paymentgateway"></a>
+## 🔑 Create Transaction<a name="create-transaction"></a>
 
 `PaymentGateway` provides business functions to create QR code, or create transaction. To do this, we need to create a `PaymentRequest` and pass to `PaymentGateway.pay(paymentMethod, paymentRequest)`
 
 And then, we can use the result of `pay` method to do everything you want.
-
-**Android**
 
 ```kotlin
 val paymentMethod = paymentGateway.getPaymentMethod(method.name, method.code)
@@ -193,33 +132,10 @@ val transactionResponse = result.get()
 }
 ```
 
-<br/>
-
-**iOS**
-
-```swift
-let request = CTTTransactionRequest(orderId: orderId,
-                                    orderCode: orderCode,
-                                    amount: amount, 
-                                    expireTime: expireTime)                                     
-```
-
-```swift
-try paymentGateway.pay(method: .qr, request: request, completion: { result in
-    switch result {
-    case .success(let transaction):
-        // Do something
-    case .failure(let error):
-        // Handle error
-    }
-})  
-```
-
-### Result observation
+## 🔑 Observe Transaction Result<a name="observe-transaction"></a>
 
 In the screen where you want to observe the transaction result, you need to create a `PaymentObserver`
 
-**Android**
 ```kotlin
 observer.observe(transactionCode)
         .onEach { result ->
@@ -232,19 +148,7 @@ observer.observe(transactionCode)
         .launchIn(lifecycleScope)
 ```
 
-**iOS**
-```swift
-observer.observe(transactionCode: transactionCode) { result in
-    switch result {
-    case .success:
-        // Success, order is paid
-    case .failure(let error):
-        // Failed
-    }
-}
-```
-
-## PaymentSDK Usage<a name="paymentsdk"></a>
+## Open Payment UI<a name="open-payment-ui"></a>
 
 ### Screenshots
 
@@ -258,19 +162,13 @@ observer.observe(transactionCode: transactionCode) { result in
 
 We need to create a `PaymentRequest` object and then pass to `PaymentActivity` or `PaymentViewController`.
 
-> **Note:** Even when you use PaymentSDK, it's still needed to set config for PaymentGateway.
-
 ```swift
 let request = PaymentRequest(orderId: orderId,
                              orderCode: orderCode,
                              orderDescription: orderDescription, // not required
                              amount: 100000,
                              expireTime: 600) // not required, default is 600s
-```
 
-**Android**
-
-```kotlin
 PaymentActivity.startForResult(this, request)
 ```
 
@@ -293,32 +191,6 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
         }
         else -> super.onActivityResult(requestCode, resultCode, data)
     }
-}
-```
-
-**iOS**
-
-
-```swift
-import PaymentSDK
-import PaymentGateway
-
-let payment = PaymentRouter.createModule(request: request, 
-                                         delegate: self)
-present(payment, animated: true, completion: nil)
-```
-
-Delegate is an object whose class conforms to `PaymentDelegate`. 
-
-> You can either present or push paymentViewController from your navigation. PaymentSDK has itself built-in navigation controller. 
-
-```swift
-func onResult(_ result: PaymentResult) {
-    
-}
-
-func onCancel() {
-    
 }
 ```
 
