@@ -121,7 +121,7 @@ observer.observe(transactionCode: transactionCode) { result in
 }
 ```
 
-## Open Payment UI<a name="open-payment-ui"></a>
+## 🔑 Open Payment UI<a name="open-payment-ui"></a>
 
 ### Screenshots
 

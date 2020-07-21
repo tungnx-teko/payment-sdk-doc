@@ -135,7 +135,7 @@ observer.observe(transactionCode)
         .launchIn(lifecycleScope)
 ```
 
-## Open Payment UI<a name="open-payment-ui"></a>
+## 🔑 Open Payment UI<a name="open-payment-ui"></a>
 
 ### Screenshots
 
