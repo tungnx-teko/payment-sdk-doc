@@ -133,7 +133,7 @@ observer.observe(transactionCode: transactionCode) { result in
   <img src="https://i.imgur.com/6PDyS71.png" width="100" />
 </p>
 
-We need to create a `PaymentRequest` object and then pass to `PaymentActivity` or `PaymentViewController`.
+We need to create a `PaymentRequest` object and then pass to `PaymentViewController`.
 
 > **Note:** Even when you use PaymentSDK, it's still needed to set config for PaymentGateway.
 

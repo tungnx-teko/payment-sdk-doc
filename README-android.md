@@ -147,7 +147,7 @@ observer.observe(transactionCode)
   <img src="https://i.imgur.com/6PDyS71.png" width="100" />
 </p>
 
-We need to create a `PaymentRequest` object and then pass to `PaymentActivity` or `PaymentViewController`.
+We need to create a `PaymentRequest` object and then pass to `PaymentActivity`.
 
 ```swift
 let request = PaymentRequest(orderId: orderId,
