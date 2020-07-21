@@ -32,7 +32,7 @@ Using **[CocoaPods](https://cocoapods.org/)**
 pod 'FirebaseFirestore'
 ```
 
-Add binary framework to project **[Release v0.0.1](https://github.com/tungnx-teko/Minerva/releases/tag/0.0.1)**
+The latest binary framework can be found at **[Latest release](https://github.com/tungnx-teko/Minerva/releases/latest)**
 
 ## 🔩 Configuration<a name="configuration"></a>
 

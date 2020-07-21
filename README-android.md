@@ -26,20 +26,7 @@ Depending on your purpose, PaymentSDK provides two options to integrate. If you 
 
 ### Android <a name="android_installation"></a>
 
-Add dependency to `gradle`
-
-```gradle
-dependencies {
-    compile vn.teko.android.payment:ui:0.2.1
-}
-```
-Production 
-
-```gradle
-dependencies {
-    compile vn.teko.android.payment:ui:0.2.1-prod
-}
-```
+Latest packages can be found at **[Latest release](https://github.com/teko-vn/payment-sdk/releases/latest)**
 
 ## 🔩 Configuration<a name="configuration"></a>
 
